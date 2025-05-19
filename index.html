@@ -1,0 +1,509 @@
+# Healthcare-AI-Dashboard
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Antony's Healthcare AI Dashboard | Precision Patient Risk Analytics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin:0; background: linear-gradient(135deg, #1e3c72, #2a5298);
+    font-family: 'Inter', sans-serif;
+    color: #e0e7ff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: #142850;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #55e6c1;
+    letter-spacing: 1.1px;
+  }
+  header p {
+    margin: 0.3rem 0 0;
+    font-weight: 400;
+    color: #a4b0be;
+  }
+
+  main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 2rem;
+  }
+
+  section {
+    background: rgba(21, 32, 70, 0.9);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #9ae6b4;
+    border-bottom: 2px solid #55e6c1;
+    padding-bottom: 0.4rem;
+  }
+
+  /* Patient Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #dde6f0;
+  }
+  thead th {
+    background-color: #1f2937;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: left;
+    border-bottom: 2px solid #55e6c1;
+  }
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  tbody tr:hover {
+    background: #334155;
+  }
+  tbody td {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Filters */
+  .filter-container {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+  }
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #7dd3fc;
+    align-self: center;
+  }
+  select, input[type="text"], input[type="number"] {
+    flex-grow: 1;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    border: 1.5px solid #334155;
+    background: #0f172a;
+    color: #cbd5e1;
+    transition: border-color 0.3s ease;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: #55e6c1;
+    box-shadow: 0 0 6px #55e6c1aa;
+  }
+
+  /* Patient Details Panel */
+  #patient-details {
+    display: flex;
+    flex-direction: column;
+  }
+  #patient-details h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #86efac;
+  }
+  #patient-details p {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+  }
+  #patient-details ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0 0 1rem 0;
+  }
+  #patient-details ul li {
+    background: #0f172a;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border-left: 5px solid #55e6c1;
+    font-size: 0.9rem;
+  }
+
+  /* Chart containers */
+  .chart-container {
+    margin-top: 1rem;
+  }
+
+  /* Buttons */
+  button {
+    background-color: #55e6c1;
+    border: none;
+    border-radius: 7px;
+    color: #142850;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: start;
+    margin-top: 0.8rem;
+  }
+  button:hover {
+    background-color: #3cbfae;
+  }
+
+  /* Responsive */
+  @media (max-width: 960px) {
+    main {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Healthcare AI Dashboard</h1>
+  <p>Antony's project demonstrating precision patient risk analytics</p>
+</header>
+
+<main>
+  <!-- Patient Data & Filters -->
+  <section aria-label="Patient list and filters">
+    <h2>Patient List</h2>
+    <div class="filter-container" role="search">
+      <label for="searchInput">Search Name:</label>
+      <input type="text" id="searchInput" aria-label="Search Patient Name" placeholder="Enter name..." />
+
+      <label for="riskFilter">Filter by Risk:</label>
+      <select id="riskFilter" aria-label="Filter patients by risk category">
+        <option value="all">All</option>
+        <option value="low">Low Risk</option>
+        <option value="medium">Medium Risk</option>
+        <option value="high">High Risk</option>
+      </select>
+    </div>
+    <table id="patientsTable" aria-describedby="patientCountDescription" tabindex="0">
+      <caption id="patientCountDescription"></caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Condition</th>
+          <th>Risk Score</th>
+          <th>Risk Level</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- patient rows dynamically generated -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Patient Details and Analytics -->
+  <section aria-label="Selected patient details and analytics">
+    <h2>Patient Details & AI Insights</h2>
+    <div id="patient-details" role="region" aria-live="polite" aria-atomic="true">
+      <p>Select a patient from the list to see details</p>
+    </div>
+    <div class="chart-container">
+      <canvas id="riskTrendChart" aria-label="Patient risk score trend chart" role="img"></canvas>
+    </div>
+    <button id="simulateUpdateBtn" aria-label="Simulate risk score update">Simulate New Visit</button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Patient sample data with risk scores over time for simulation
+  const patients = [
+    {
+      id: 1,
+      name: "Amina Yusuf",
+      age: 38,
+      condition: "Hypertension",
+      riskHistory: [45, 55, 60, 62, 68], // risk score over visits
+      notes: [
+        "Blood pressure control improving with medication.",
+        "Minor side effects reported with current treatment.",
+        "Cardiac risk mildly elevated – advise lifestyle modification.",
+        "Patient compliant with diet and exercise plan.",
+        "Sustained improvement seen in latest check-up."
+      ]
+    },
+    {
+      id: 2,
+      name: "Kwame Mensah",
+      age: 51,
+      condition: "Type 2 Diabetes",
+      riskHistory: [70, 65, 72, 75, 80],
+      notes: [
+        "Blood sugar levels fluctuating.",
+        "Adjustment to insulin therapy recommended.",
+        "Patient education sessions completed.",
+        "Early signs of neuropathy detected.",
+        "Increased monitoring advised."
+      ]
+    },
+    {
+      id: 3,
+      name: "Fatima Diallo",
+      age: 29,
+      condition: "Asthma",
+      riskHistory: [30, 32, 28, 25, 20],
+      notes: [
+        "Symptom frequency reduced.",
+        "Triggered by seasonal allergens.",
+        "Effective use of inhaler demonstrated.",
+        "Recommended for regular follow-up.",
+        "Stable condition with current treatment."
+      ]
+    },
+    {
+      id: 4,
+      name: "Enock Abebe",
+      age: 45,
+      condition: "Chronic Kidney Disease",
+      riskHistory: [85, 83, 88, 90, 92],
+      notes: [
+        "Progressive decline in kidney function.",
+        "Dialysis planning initiated.",
+        "Dietary restrictions emphasized.",
+        "Patient experiencing fatigue and hypertension.",
+        "Referral to nephrologist arranged."
+      ]
+    },
+    {
+      id: 5,
+      name: "Nia Okoro",
+      age: 62,
+      condition: "Coronary Artery Disease",
+      riskHistory: [60, 63, 65, 68, 70],
+      notes: [
+        "Stable angina controlled with medication.",
+        "No recent chest pain reported.",
+        "Lifestyle changes effective, including smoking cessation.",
+        "Scheduled for stress test next visit.",
+        "Medication compliance good."
+      ]
+    }
+  ];
+
+  const patientsTableBody = document.querySelector("#patientsTable tbody");
+  const patientDetailsDiv = document.getElementById("patient-details");
+  const patientCountDescription = document.getElementById("patientCountDescription");
+
+  // Functions to determine risk level by risk score
+  function getRiskLevel(score) {
+    if (score >= 75) return "High";
+    if (score >= 50) return "Medium";
+    return "Low";
+  }
+
+  // Render the patient rows based on filters and search
+  function renderPatientsList(filterRisk='all', searchText='') {
+    const lowerSearch = searchText.toLowerCase().trim();
+    const filtered = patients.filter(p => {
+      const riskLevel = getRiskLevel(p.riskHistory[p.riskHistory.length - 1]).toLowerCase();
+      const matchesRisk = filterRisk === 'all' || riskLevel === filterRisk;
+      const matchesSearch = p.name.toLowerCase().includes(lowerSearch);
+      return matchesRisk && matchesSearch;
+    });
+    
+    patientsTableBody.innerHTML = '';
+    filtered.forEach(p => {
+      const latestScore = p.riskHistory[p.riskHistory.length - 1];
+      const riskLevel = getRiskLevel(latestScore);
+      const row = document.createElement("tr");
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-label", `${p.name}, Age ${p.age}, Condition ${p.condition}, Risk Level ${riskLevel}`);
+      row.innerHTML = `
+        <td>${p.name}</td>
+        <td>${p.age}</td>
+        <td>${p.condition}</td>
+        <td>${latestScore}</td>
+        <td>${riskLevel}</td>
+      `;
+      row.addEventListener("click", () => openPatientDetails(p.id));
+      row.addEventListener("keydown", e => {
+        if(e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openPatientDetails(p.id);
+        }
+      });
+      patientsTableBody.appendChild(row);
+    });
+    patientCountDescription.textContent = `${filtered.length} patients found out of ${patients.length}`;
+  }
+
+  let currentPatientId = null;
+
+  // Chart.js instance for risk trend
+  let riskTrendChart;
+
+  // Display patient details and initialize risk trend chart
+  function openPatientDetails(id) {
+    currentPatientId = id;
+    const patient = patients.find(p => p.id === id);
+    if (!patient) {
+      patientDetailsDiv.innerHTML = "<p>Patient data not found.</p>";
+      return;
+    }
+    const latestRisk = patient.riskHistory[patient.riskHistory.length -1];
+    const riskLevel = getRiskLevel(latestRisk);
+
+    patientDetailsDiv.innerHTML = `
+      <h3>${patient.name}, Age ${patient.age}</h3>
+      <p><strong>Condition:</strong> ${patient.condition}</p>
+      <p><strong>Current Risk Score:</strong> ${latestRisk} (${riskLevel} Risk)</p>
+      <p><strong>Visit Notes:</strong></p>
+      <ul>
+        ${patient.notes.map(note => `<li>${note}</li>`).join('')}
+      </ul>
+    `;
+
+    // Setup or update risk trend chart
+    const ctx = document.getElementById('riskTrendChart').getContext('2d');
+    const labels = patient.riskHistory.map((_, idx) => `Visit ${idx + 1}`);
+    const data = patient.riskHistory;
+
+    if (riskTrendChart) {
+      riskTrendChart.data.labels = labels;
+      riskTrendChart.data.datasets[0].data = data;
+      riskTrendChart.update();
+    } else {
+      riskTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Risk Score Over Time',
+            data,
+            fill: true,
+            backgroundColor: 'rgba(85,230,193,0.2)',
+            borderColor: '#55e6c1',
+            borderWidth: 3,
+            tension: 0.3,
+            pointBackgroundColor: '#00ffcc',
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                stepSize: 10,
+                color: '#a0f7e2',
+                callback: val => val + '%'
+              },
+              grid: {
+                color: '#134e4a'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#a0f7e2'
+              },
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#adeee5', font: { size: 14 } }
+            },
+            tooltip: {
+              backgroundColor: '#026654',
+              cornerRadius: 6,
+              bodyColor: '#d3fff9',
+              callbacks: {
+                label: ctx => `Risk: ${ctx.parsed.y}`
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // Simulate a new patient visit updating risk score and note
+  function simulateNewVisit() {
+    if (currentPatientId == null) {
+      alert("Please select a patient first.");
+      return;
+    }
+    const patient = patients.find(p => p.id === currentPatientId);
+    if (!patient) return;
+
+    // Simulate new risk score (slight random variation)
+    let lastScore = patient.riskHistory[patient.riskHistory.length - 1];
+    // Random change within -5 to +5 range, clamp between 0 and 100
+    let newScore = Math.min(100, Math.max(0, lastScore + (Math.random() * 10 - 5)));
+    newScore = Math.round(newScore);
+
+    patient.riskHistory.push(newScore);
+
+    // Generate a random note corresponding to new visit and risk trend
+    let newNote;
+    if (newScore > lastScore) {
+      newNote = "Risk increased slightly; recommend closer monitoring.";
+    } else if (newScore < lastScore) {
+      newNote = "Risk decreased; treatment seems effective.";
+    } else {
+      newNote = "Stable condition observed.";
+    }
+    patient.notes.push(newNote);
+
+    // Keep max 10 visits for display
+    if (patient.riskHistory.length > 10) {
+      patient.riskHistory.shift();
+      patient.notes.shift();
+    }
+    
+    openPatientDetails(currentPatientId);
+    renderPatientsList(document.getElementById('riskFilter').value, document.getElementById('searchInput').value);
+  }
+
+  // Initialize app, render all patients
+  renderPatientsList();
+
+  // Hook up filters and search input
+  document.getElementById('riskFilter').addEventListener('change', e => {
+    renderPatientsList(e.target.value, document.getElementById('searchInput').value);
+  });
+  document.getElementById('searchInput').addEventListener('input', e => {
+    renderPatientsList(document.getElementById('riskFilter').value, e.target.value);
+  });
+
+  // Hook simulate new visit button
+  document.getElementById('simulateUpdateBtn').addEventListener('click', simulateNewVisit);
+
+</script>
+</body>
+</html>
+
